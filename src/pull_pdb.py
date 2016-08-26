@@ -79,7 +79,7 @@ def main():
     output = output_handler()
 
     while len(batch) > 0:
-        code = batch.pop()
+        code = batch.pop().strip()
         proc = mp.Process(target=consumer, args=(code, result_queue,))
 
         proc.start()

@@ -1,23 +1,35 @@
+keep=Makefile:*.gitignore:*.md
+keepdir=data:models:notebooks:src:*.git
+
 all: pull_research_data
 
-pull_research_data: pull_anglor pull_spinex
-# to be added: pull_ccpdb30 pull_spider pull_spinex
+pull_research_data: pull_anglor pull_spinex pull_spider pull_ccpdb30
 
 ./data/raw:
-				mkdir -p ./data/raw
+	mkdir -p ./data/raw
 
 pull_anglor: ./data/raw
-				cat ./data/external/anglor_460_validation.txt | python ./src/pull_pdb.py ./data/raw/anglor_460_validation.json ./data/raw/anglor_460_validation_log.txt
-				cat ./data/external/anglor_500_training.txt | python ./src/pull_pdb.py ./data/raw/anglor_500_training.json ./data/raw/anglor_500_training_log.txt
-				cat ./data/external/anglor_1029_testing.txt | python ./src/pull_pdb.py ./data/raw/anglor_1029_testing.json ./data/raw/anglor_1029_testing_log.txt
+	touch ./data/raw/anglor_460_validation.json || cat ./data/external/anglor_460_validation.txt | python ./src/pull_pdb.py ./data/raw/anglor_460_validation.json ./data/raw/anglor_460_validation_log.txt
+	touch ./data/raw/anglor_500_training.json || cat ./data/external/anglor_500_training.txt | python ./src/pull_pdb.py ./data/raw/anglor_500_training.json ./data/raw/anglor_500_training_log.txt
+	touch ./data/raw/anglor_1029_testing.json || cat ./data/external/anglor_1029_testing.txt | python ./src/pull_pdb.py ./data/raw/anglor_1029_testing.json ./data/raw/anglor_1029_testing_log.txt
+	(GLOBIGNORE=$(keep)":"$(keepdir); rm * || rmdir -rf *)
 
 pull_spinex: ./data/raw
-				cat ./data/external/list.1833 | python ./src/pull_pdb.py ./data/raw/list1833.json ./data/raw/list1833_log.txt
-				cat ./data/external/list.1975 | python ./src/pull_pdb.py ./data/raw/list1975.json ./data/raw/list1975_log.txt
-				cat ./data/external/list.2479 | python ./src/pull_pdb.py ./data/raw/list2479.json ./data/raw/list2479_log.txt
-				cat ./data/external/list.2640 | python ./src/pull_pdb.py ./data/raw/list2640.json ./data/raw/list2640_log.txt
+	touch ./data/raw/list1833.json || cat ./data/external/list.1833 | python ./src/pull_pdb.py ./data/raw/list1833.json ./data/raw/list1833_log.txt
+	touch ./data/raw/list1975.json || cat ./data/external/list.1975 | python ./src/pull_pdb.py ./data/raw/list1975.json ./data/raw/list1975_log.txt
+	touch ./data/raw/list2479.json || cat ./data/external/list.2479 | python ./src/pull_pdb.py ./data/raw/list2479.json ./data/raw/list2479_log.txt
+	touch ./data/raw/list2640.json || cat ./data/external/list.2640 | python ./src/pull_pdb.py ./data/raw/list2640.json ./data/raw/list2640_log.txt
+	(GLOBIGNORE=$(keep)":"$(keepdir); rm * || rmdir -rf *)
 
+pull_spider: ./data/raw
+	touch ./data/raw/ts1199.json || cat ./data/external/ts1199.txt | grep \> | cut -c 2- | python ./src/pull_pdb.py ./data/raw/ts1199.json ./data/raw/ts1199_log.txt
+	touch ./data/raw/ts4590.json || cat ./data/external/ts4590.txt | grep \> | cut -c 2- | python ./src/pull_pdb.py ./data/raw/ts4590.json ./data/raw/ts4590_log.txt
+	(GLOBIGNORE=$(keep)":"$(keepdir); rm * || rmdir -rf *)
+
+pull_ccpdb30: ./data/raw
+	touch ./data/raw/ccpdb30.json || cat ./data/external/ccpdb30.txt | grep \> | cut -c 2- | cut -d . -f 1 | python ./src/pull_pdb.py ./data/raw/ccpdb30.json ./data/raw/ccpdb30_log.txt
+	(GLOBIGNORE=$(keep)":"$(keepdir); rm * || rmdir -rf *)
 
 .PHONY: clean
 clean:
-				rm -rf ./data/raw
+	rm -rf ./data/raw
