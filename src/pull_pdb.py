@@ -33,6 +33,12 @@ class output_handler(object):
                 "tau": chain.get_tau_list()}
                 }.items()
 
+    def __compose__(self, chain):
+        feature_iter = [getattr(self.__class__, attr) for attr in [x for x, y in self.__class__.__dict__.items() if type(lambda:0) and not x.startswith("__")]]
+        return dict(
+            [item for sublist in [feature(self, chain) for feature in feature_iter] for item in sublist]
+        )
+
     def __call__(self, code, pull_outcome):
         """Implement the output handler logic"""
         filename, outcome = pull_outcome
@@ -46,15 +52,16 @@ class output_handler(object):
                     structure[0][code[4].upper()]
                 )[0]
             except:
-                chain = BPDB.PPBuilder().build_peptides(
-                    next(structure[0].get_chains())
-                )[0]
+                try:
+                    chain = BPDB.PPBuilder().build_peptides(
+                        next(structure[0].get_chains())
+                    )[0]
+                except:
+                    self.log.append(code + " >>> Pull Failed on Chain")
+                    return
 
             try:
-                self.data[code[0:5]] = dict(
-                    self.get_sequence(chain)
-                    + self.get_angles(chain)
-                )
+                self.data[code[0:5]] = self.__compose__(chain)
                 self.log.append(code + " >>> " + outcome)
             except:
                 self.log.append(code + " >>> Pull Failed on a Feature")
